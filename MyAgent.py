@@ -61,19 +61,11 @@ class Player(BasePlayer):
     def heuristic(self, state):
         grid = [[state.getTile(r, c) for c in range(4)] for r in range(4)]
         actual_grid = [[0 if v == 0 else 2 ** v for v in row] for row in grid]
-        empty = sum(v == 0 for row in grid for v in row)
         maxTile = max(max(row) for row in actual_grid)
         corners = [actual_grid[0][0], actual_grid[0][3], actual_grid[3][0], actual_grid[3][3]]
         corner_bonus = maxTile if maxTile in corners else 0
-        smoothness = 0
-        for i in range(4):
-            for j in range(3):
-                smoothness -= abs(actual_grid[i][j] - actual_grid[i][j + 1])
-        for j in range(4):
-            for i in range(3):
-                smoothness -= abs(actual_grid[i][j] - actual_grid[i + 1][j])
         mono = self.monotonicity(actual_grid)
-        return state.getScore() + empty * 5 + corner_bonus * 1000 + mono * 10 + smoothness
+        return state.getScore() + corner_bonus * 1200 + mono * 15
 
     def monotonicity(self, grid):
         mono = 0
@@ -89,8 +81,11 @@ class Player(BasePlayer):
 
     def moveOrder(self, state):
         actions = state.actions()
-        preferred = ['UP', 'LEFT', 'RIGHT', 'DOWN']
-        return sorted(actions, key=lambda x: preferred.index(x) if x in preferred else 99)
+        preferred = ['UP', 'LEFT', 'RIGHT']
+        safe_moves = [a for a in actions if a != 'DOWN']
+        if safe_moves:
+            return sorted(safe_moves, key=lambda x: preferred.index(x) if x in preferred else 99)
+        return actions
 
     def stats(self):
         print(f'Average depth: {self._depthCount/self._count:.2f}')

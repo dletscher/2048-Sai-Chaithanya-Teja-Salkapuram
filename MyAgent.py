@@ -64,28 +64,12 @@ class Player(BasePlayer):
         maxTile = max(max(row) for row in actual_grid)
         corners = [actual_grid[0][0], actual_grid[0][3], actual_grid[3][0], actual_grid[3][3]]
         corner_bonus = maxTile if maxTile in corners else 0
-        mono = self.monotonicity(actual_grid)
-        return state.getScore() + corner_bonus * 1200 + mono * 15
-
-    def monotonicity(self, grid):
-        mono = 0
-        for row in grid:
-            for i in range(3):
-                if row[i] > row[i + 1]:
-                    mono += row[i] - row[i + 1]
-        for col in zip(*grid):
-            for i in range(3):
-                if col[i] > col[i + 1]:
-                    mono += col[i] - col[i + 1]
-        return mono
+        return state.getScore() + corner_bonus * 1000
 
     def moveOrder(self, state):
         actions = state.actions()
-        preferred = ['UP', 'LEFT', 'RIGHT']
-        safe_moves = [a for a in actions if a != 'DOWN']
-        if safe_moves:
-            return sorted(safe_moves, key=lambda x: preferred.index(x) if x in preferred else 99)
-        return actions
+        preferred = ['UP', 'LEFT', 'RIGHT', 'DOWN']
+        return sorted(actions, key=lambda x: preferred.index(x) if x in preferred else 99)
 
     def stats(self):
         print(f'Average depth: {self._depthCount/self._count:.2f}')
